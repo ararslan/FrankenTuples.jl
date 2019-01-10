@@ -17,6 +17,7 @@ using Test
     @test y == ftuple(1.0, 2.0, a=3.0, b=4.0)
 
     t = ftuple(1, 2)
+    @test t == FrankenTuple((1, 2))
     @test length(t) == 2
     @test Tuple(t) == (1, 2)
     @test NamedTuple(t) == NamedTuple()
@@ -25,6 +26,7 @@ using Test
     @test t == @ftuple (1, 2)
 
     nt = ftuple(a=3, b=4)
+    @test nt == FrankenTuple((a=3, b=4))
     @test length(nt) == 2
     @test Tuple(nt) == ()
     @test NamedTuple(nt) == (a=3, b=4)
@@ -33,6 +35,7 @@ using Test
     @test nt == @ftuple (a=3, b=4)
 
     e = ftuple()
+    @test e == FrankenTuple()
     @test isempty(e)
     @test length(e) == 0
     @test sprint(show, e) == "FrankenTuple()"
