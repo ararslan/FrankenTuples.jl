@@ -1,5 +1,7 @@
 # FrankenTuples.jl
 
+[![Travis](https://travis-ci.org/ararslan/FrankenTuples.jl.svg?branch=master)](https://travis-ci.org/ararslan/FrankenTuples.jl)
+
 This package defines a type, `FrankenTuple`, which is like a cross between a `Tuple` and a
 `NamedTuple`; it contains both positional and named elements.
 
