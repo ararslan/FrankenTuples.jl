@@ -115,6 +115,8 @@ Base.pairs(ft::FrankenTuple) = Iterators.Pairs(ft, keys(ft))
 Base.eltype(::Type{FrankenTuple{T,NamedTuple{N,V}}}) where {T<:Tuple,N,V<:Tuple} =
     Base.promote_typejoin(eltype(T), eltype(V))
 
+Base.empty(@nospecialize ft::FrankenTuple) = FrankenTuple()
+
 """
     ftuple(args...; kwargs...)
 

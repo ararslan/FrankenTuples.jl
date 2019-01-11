@@ -47,7 +47,7 @@ using Test
     @test first(nt) == 3
     @test Base.tail(nt) == ftuple(b=4)
 
-    e = ftuple()
+    e = empty(x)
     @test e == FrankenTuple()
     @test isempty(e)
     @test length(e) == 0
