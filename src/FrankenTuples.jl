@@ -80,6 +80,22 @@ function Base.getindex(ft::FrankenTuple, i::Integer)
 end
 Base.getindex(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 
+Base.firstindex(ft::FrankenTuple) = 1
+Base.lastindex(ft::FrankenTuple) = length(ft)
+
+Base.first(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
+    throw(ArgumentError("FrankenTuple must be non-empty"))
+Base.first(ft::FrankenTuple) = @inbounds ft[1]
+
+Base.tail(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
+    throw(ArgumentError("FrankenTuple must be non-empty"))
+Base.tail(ft::FrankenTuple) = FrankenTuple(Base.tail(Tuple(ft)), NamedTuple(ft))
+function Base.tail(ft::FrankenTuple{Tuple{},NamedTuple{N,T}}) where {N,T}
+    # TODO: This can be simplified to a simple call to tail for VERSION >= v"1.1.0-DEV.553"
+    nt = NamedTuple{Base.tail(N)}(NamedTuple(ft))
+    FrankenTuple((), nt)
+end
+
 Base.getproperty(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 
 Base.iterate(ft::FrankenTuple, state...) =

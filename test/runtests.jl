@@ -15,6 +15,8 @@ using Test
     @test keys(x) == (1, 2, :a, :b)
     @test values(x) == (1, 2, 3, 4)
     @test eltype(x) == Int
+    @test first(x) == 1
+    @test Base.tail(x) == ftuple(2, a=3, b=4)
 
     y = FrankenTuple{Tuple{Float64,Float64},NamedTuple{(:a,:b),Tuple{Float64,Float64}}}(x)
     @test y == ftuple(1.0, 2.0, a=3.0, b=4.0)
@@ -29,6 +31,8 @@ using Test
     @test t == @ftuple (1, 2)
     @test keys(t) == keys(Tuple(t))
     @test values(t) == (1, 2)
+    @test first(t) == 1
+    @test Base.tail(t) == ftuple(2)
 
     nt = ftuple(a=3, b=4)
     @test nt == FrankenTuple((a=3, b=4))
@@ -40,6 +44,8 @@ using Test
     @test nt == @ftuple (a=3, b=4)
     @test keys(nt) == (:a, :b)
     @test values(nt) == (3, 4)
+    @test first(nt) == 3
+    @test Base.tail(nt) == ftuple(b=4)
 
     e = ftuple()
     @test e == FrankenTuple()
@@ -48,6 +54,8 @@ using Test
     @test sprint(show, e) == "FrankenTuple()"
     @test e == @ftuple ()
     @test keys(e) == values(e) == ()
+    @test_throws ArgumentError first(e)
+    @test_throws ArgumentError Base.tail(e)
 
     @test eltype(ftuple(1, 2.0, a=3, b=4.0f0)) == Real
 end
@@ -63,4 +71,6 @@ end
         @test t == i
     end
     @test collect(pairs(x)) == [1 => 1, 2 => 2, :a => 3, :b => 4]
+    @test firstindex(x) == 1
+    @test lastindex(x) == 4
 end
