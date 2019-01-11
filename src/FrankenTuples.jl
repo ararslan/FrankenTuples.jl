@@ -85,6 +85,21 @@ Base.getproperty(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 Base.iterate(ft::FrankenTuple, state...) =
     iterate(Iterators.flatten((Tuple(ft), NamedTuple(ft))), state...)
 
+Base.keys(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = ()
+Base.keys(ft::FrankenTuple{Tuple{},NamedTuple{N,<:Tuple}}) where {N} = N
+Base.keys(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = keys(Tuple(ft))
+Base.keys(ft::FrankenTuple) = (keys(Tuple(ft))..., keys(NamedTuple(ft))...)
+
+Base.values(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = ()
+Base.values(ft::FrankenTuple{Tuple{},<:NamedTuple}) = values(NamedTuple(ft))
+Base.values(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = Tuple(ft)
+Base.values(ft::FrankenTuple) = (Tuple(ft)..., NamedTuple(ft)...)
+
+Base.pairs(ft::FrankenTuple) = Iterators.Pairs(ft, keys(ft))
+
+Base.eltype(::Type{FrankenTuple{T,NamedTuple{N,V}}}) where {T<:Tuple,N,V<:Tuple} =
+    Base.promote_typejoin(eltype(T), eltype(V))
+
 """
     ftuple(args...; kwargs...)
 
