@@ -87,14 +87,13 @@ Base.first(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
     throw(ArgumentError("FrankenTuple must be non-empty"))
 Base.first(ft::FrankenTuple) = @inbounds ft[1]
 
-Base.tail(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
+# TODO: Should be able to get rid of the helper after VERSION >= v"1.1.0-DEV.553"
+Base.tail(ft::FrankenTuple) = _tail(Tuple(ft), NamedTuple(ft))
+_tail(t::Tuple{}, nt::NamedTuple{(),Tuple{}}) =
     throw(ArgumentError("FrankenTuple must be non-empty"))
-Base.tail(ft::FrankenTuple) = FrankenTuple(Base.tail(Tuple(ft)), NamedTuple(ft))
-function Base.tail(ft::FrankenTuple{Tuple{},NamedTuple{N,T}}) where {N,T}
-    # TODO: This can be simplified to a simple call to tail for VERSION >= v"1.1.0-DEV.553"
-    nt = NamedTuple{Base.tail(N)}(NamedTuple(ft))
-    FrankenTuple((), nt)
-end
+_tail(t::Tuple{}, nt::NamedTuple{N,<:Tuple}) where {N} =
+    FrankenTuple(t, NamedTuple{Base.tail(N)}(nt))
+_tail(t::Tuple, nt::NamedTuple) = FrankenTuple(Base.tail(t), nt)
 
 Base.getproperty(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 
