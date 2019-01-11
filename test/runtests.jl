@@ -42,11 +42,14 @@ using Test
     @test e == @ftuple ()
 end
 
-@testset "Indexing" begin
+@testset "Indexing and iteration" begin
     x = ftuple(1, 2, a=3, b=4)
     @test x.a == x[:a] == 3
     @test x.b == x[:b] == 4
     for i = 1:4
         @test x[i] == i
+    end
+    for (i, t) in enumerate(x)
+        @test t == i
     end
 end

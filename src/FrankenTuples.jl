@@ -82,6 +82,9 @@ Base.getindex(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 
 Base.getproperty(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 
+Base.iterate(ft::FrankenTuple, state...) =
+    iterate(Iterators.flatten((Tuple(ft), NamedTuple(ft))), state...)
+
 """
     ftuple(args...; kwargs...)
 
