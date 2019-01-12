@@ -42,7 +42,18 @@ FrankenTuple(nt::NamedTuple) = FrankenTuple((), nt)
 
 FrankenTuple(ft::FrankenTuple) = ft
 
+"""
+    Tuple(ft::FrankenTuple)
+
+Access the `Tuple` part of a `FrankenTuple`, i.e. the "plain," unnamed portion.
+"""
 Base.Tuple(ft::FrankenTuple) = getfield(ft, :t)
+
+"""
+    NamedTuple(ft::FrankenTuple)
+
+Access the `NamedTuple` part of a `FrankenTuple`, i.e. the named portion.
+"""
 Base.NamedTuple(ft::FrankenTuple) = getfield(ft, :nt)
 
 function Base.show(io::IO, ft::FrankenTuple)
@@ -61,14 +72,41 @@ Base.convert(::Type{FrankenTuple{T,NT}}, t::Tuple) where {T<:Tuple,NT<:NamedTupl
 Base.convert(::Type{FrankenTuple{T,NT}}, nt::NamedTuple) where {T<:Tuple,NT<:NamedTuple} =
     FrankenTuple{T,NT}((), convert(NT, nt))
 
-Base.isempty(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = true
-Base.isempty(ft::FrankenTuple) = false
+"""
+    isempty(ft::FrankenTuple)
 
+Determine whether the given `FrankenTuple` is empty, i.e. has at least 1 element.
+"""
+Base.isempty(ft::FrankenTuple) = false
+Base.isempty(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = true
+
+"""
+    length(ft::FrankenTuple)
+
+Compute the number of elements in `ft`.
+"""
+Base.length(ft::FrankenTuple) = length(Tuple(ft)) + length(NamedTuple(ft))
 Base.length(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = 0
 Base.length(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = length(Tuple(ft))
 Base.length(ft::FrankenTuple{Tuple{},<:NamedTuple}) = length(NamedTuple(ft))
-Base.length(ft::FrankenTuple) = length(Tuple(ft)) + length(NamedTuple(ft))
 
+"""
+    getindex(ft::FrankenTuple, i)
+
+Retrieve the value of `ft` at the given index `i`. When `i::Integer`, this gets the value
+at index `i` in iteration order.
+When `i::Symbol`, this gets the value from the named section with name `i`.
+(`getproperty` can also be used for the `Symbol` case.)
+
+# Examples
+```jldoctest
+julia> ftuple(1, 2; a=3, b=4)[3]
+3
+
+julia> ftuple(1, 2; a=3, b=4)[:a]
+3
+```
+"""
 function Base.getindex(ft::FrankenTuple, i::Integer)
     t = Tuple(ft)
     n = length(t)
@@ -80,41 +118,156 @@ function Base.getindex(ft::FrankenTuple, i::Integer)
 end
 Base.getindex(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
 
+Base.getproperty(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
+
+"""
+    firstindex(ft::FrankenTuple)
+
+Retrieve the first index of `ft`, which is always 1.
+"""
 Base.firstindex(ft::FrankenTuple) = 1
+
+"""
+    lastindex(ft::FrankenTuple)
+
+Retrieve the last index of `ft`, which is equivalent to its `length`.
+"""
 Base.lastindex(ft::FrankenTuple) = length(ft)
 
+"""
+    first(ft::FrankenTuple)
+
+Get the first value in `ft` in iteration order.
+`ft` must be non-empty.
+"""
+Base.first(ft::FrankenTuple) = @inbounds ft[1]
 Base.first(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
     throw(ArgumentError("FrankenTuple must be non-empty"))
-Base.first(ft::FrankenTuple) = @inbounds ft[1]
 
-# TODO: Should be able to get rid of the helper after VERSION >= v"1.1.0-DEV.553"
+"""
+    Base.tail(ft::FrankenTuple)
+
+Return the tail portion of `ft`: a new `FrankenTuple` with the first element of `ft`
+removed.
+`ft` must be non-empty.
+
+# Examples
+```jldoctest
+julia> Base.tail(ftuple(a=4, b=5))
+FrankenTuple((), (b = 5,))
+```
+"""
 Base.tail(ft::FrankenTuple) = _tail(Tuple(ft), NamedTuple(ft))
+# TODO: Should be able to get rid of the helper after VERSION >= v"1.1.0-DEV.553"
 _tail(t::Tuple{}, nt::NamedTuple{(),Tuple{}}) =
     throw(ArgumentError("FrankenTuple must be non-empty"))
 _tail(t::Tuple{}, nt::NamedTuple{N,<:Tuple}) where {N} =
     FrankenTuple(t, NamedTuple{Base.tail(N)}(nt))
 _tail(t::Tuple, nt::NamedTuple) = FrankenTuple(Base.tail(t), nt)
 
-Base.getproperty(ft::FrankenTuple, x::Symbol) = getfield(NamedTuple(ft), x)
+"""
+    iterate(ft::FrankenTuple[, state])
 
+Iterate over `ft`.
+This yields the values of the unnamed section first, then the values of the named section.
+
+# Examples
+```jldoctest
+julia> ft = @ftuple (1, a=3, 2, b=4)
+FrankenTuple((1, 2), (a = 3, b = 4))
+
+julia> collect(ft)
+4-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+```
+"""
 Base.iterate(ft::FrankenTuple, state...) =
     iterate(Iterators.flatten((Tuple(ft), NamedTuple(ft))), state...)
 
+"""
+    keys(ft::FrankenTuple)
+
+Get the keys of the given `FrankenTuple`, i.e. the set of valid indices into `ft`.
+The unnamed section of `ft` has 1-based integer keys and the named section is keyed by
+name, given as `Symbol`s.
+
+# Examples
+```jldoctest
+julia> keys(ftuple(1, 2; a=3, b=4))
+(1, 2, :a, :b)
+```
+"""
+Base.keys(ft::FrankenTuple) = (keys(Tuple(ft))..., keys(NamedTuple(ft))...)
 Base.keys(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = ()
 Base.keys(ft::FrankenTuple{Tuple{},NamedTuple{N,<:Tuple}}) where {N} = N
 Base.keys(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = keys(Tuple(ft))
-Base.keys(ft::FrankenTuple) = (keys(Tuple(ft))..., keys(NamedTuple(ft))...)
 
+"""
+    values(ft::FrankenTuple)
+
+Get the values of the given `FrankenTuple` in iteration order.
+The values for the unnamed section appear before that of the named section.
+
+# Examples
+```jldoctest
+julia> values(ftuple(1, 2; a=3, b=4))
+(1, 2, 3, 4)
+```
+"""
+Base.values(ft::FrankenTuple) = (Tuple(ft)..., NamedTuple(ft)...)
 Base.values(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = ()
 Base.values(ft::FrankenTuple{Tuple{},<:NamedTuple}) = values(NamedTuple(ft))
 Base.values(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = Tuple(ft)
-Base.values(ft::FrankenTuple) = (Tuple(ft)..., NamedTuple(ft)...)
 
+"""
+    pairs(ft::FrankenTuple)
+
+Construct a `Pairs` iterator that associates the `keys` of `ft` with its `values`.
+
+# Examples
+```jldoctest
+julia> collect(pairs(ftuple(1, 2; a=3, b=4)))
+4-element Array{Pair{Any,Int64},1}:
+  1 => 1
+  2 => 2
+ :a => 3
+ :b => 4
+```
+"""
 Base.pairs(ft::FrankenTuple) = Iterators.Pairs(ft, keys(ft))
 
+"""
+    eltype(ft::FrankenTuple)
+
+Determine the element type of `ft`.
+This is the immedate supertype of the elements in `ft` if they are not homogeneously typed.
+
+# Examples
+```jldoctest
+julia> eltype(ftuple(1, 2; a=3, b=4))
+Int64
+
+julia> eltype(ftuple(0x0, 1))
+Integer
+
+julia> eltype(ftuple(a=2.0, b=0x1))
+Real
+
+julia> eltype(ftuple())
+Union{}
+```
+"""
 Base.eltype(::Type{FrankenTuple{T,NamedTuple{N,V}}}) where {T<:Tuple,N,V<:Tuple} =
     Base.promote_typejoin(eltype(T), eltype(V))
 
+"""
+    empty(ft::FrankenTuple)
+
+Construct an empty `FrankenTuple`.
+"""
 Base.empty(@nospecialize ft::FrankenTuple) = FrankenTuple()
 
 """

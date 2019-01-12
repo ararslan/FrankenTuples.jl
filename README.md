@@ -2,6 +2,7 @@
 
 [![Travis](https://travis-ci.org/ararslan/FrankenTuples.jl.svg?branch=master)](https://travis-ci.org/ararslan/FrankenTuples.jl)
 [![Coveralls](https://coveralls.io/repos/github/ararslan/FrankenTuples.jl/badge.svg?branch=master)](https://coveralls.io/github/ararslan/FrankenTuples.jl?branch=master)
+[![][docs-latest-img]][docs-latest-url]
 
 This package defines a type, `FrankenTuple`, which is like a cross between a `Tuple` and a
 `NamedTuple`; it contains both positional and named elements.
@@ -13,3 +14,6 @@ Take away the function, and you get `(args...; kwargs...)`, a tuple with both po
 and named elements.
 No one Base type currently models this, so `FrankenTuple` was created as an experiment to
 see if and when this precise structure could be useful.
+
+[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
+[docs-latest-url]: http://ararslan.github.io/FrankenTuples.jl/latest/
