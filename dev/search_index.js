@@ -176,4 +176,20 @@ var documenterSearchIndex = {"docs": [
     "text": "FrankenTuples adhere as closely as makes sense to the API for Tuples and NamedTuples.Base.Tuple\nBase.NamedTuple\nBase.length\nBase.isempty\nBase.iterate\nBase.keys\nBase.values\nBase.pairs\nBase.getindex\nBase.firstindex\nBase.lastindex\nBase.first\nBase.tail\nBase.empty\nBase.eltype"
 },
 
+{
+    "location": "#FrankenTuples.ftcall",
+    "page": "FrankenTuples.jl",
+    "title": "FrankenTuples.ftcall",
+    "category": "function",
+    "text": "ftcall(f::Function, ft::FrankenTuple)\n\nCall the function f using the unnamed portion of ft as its positional arguments and the named portion of ft as its keyword arguments.\n\nExamples\n\njulia> ftcall(mapreduce, ftuple(abs2, -, 1:4; init=0))\n-30\n\n\n\n\n\n"
+},
+
+{
+    "location": "#Additional-Methods-1",
+    "page": "FrankenTuples.jl",
+    "title": "Additional Methods",
+    "category": "section",
+    "text": "FrankenTuples.ftcall"
+},
+
 ]}
