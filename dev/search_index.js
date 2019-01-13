@@ -177,6 +177,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "#Base.hasmethod",
+    "page": "FrankenTuples.jl",
+    "title": "Base.hasmethod",
+    "category": "function",
+    "text": "hasmethod(f::Function, ft::Type{<:FrankenTuple})\n\nDetermine whether the function f has a method with positional argument types matching those in the unnamed portion of ft and with keyword arguments named in accordance with those in the named portion of ft.\n\nNote that the types in the named portion of ft do not factor into determining the existence of a matching method because keyword arguments to not participate in dispatch. Similarly, calling hasmethod with a FrankenTuple with an empty named portion will still return true if the positional arguments match, even if f only has methods that accept keyword arguments. This ensures agreement with the behavior of hasmethod on Tuples.\n\nExamples\n\njulia> f(x::Int; y=3) = x + y;\n\njulia> hasmethod(f, typeof(ftuple(1, y=2)))\ntrue\n\njulia> hasmethod(f, typeof(ftuple(1, a=3))) # no keyword `a`\nfalse\n\njulia> hasmethod(f, typeof(ftuple(44, y=\"My type doesn\'t matter\")))\ntrue\n\nnote: Note\nThis method does not yet take into account world ages bounds, unlike the generic hasmethod method in Base.\n\n\n\n\n\n"
+},
+
+{
     "location": "#FrankenTuples.ftcall",
     "page": "FrankenTuples.jl",
     "title": "FrankenTuples.ftcall",
@@ -189,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "FrankenTuples.jl",
     "title": "Additional Methods",
     "category": "section",
-    "text": "FrankenTuples.ftcall"
+    "text": "These are some additional ways to use FrankenTuples. The most interesting of these is perhaps hasmethod, which permits looking for methods that have particular keyword arguments. This is not currently possible with the generic method in Base.Base.hasmethod\nFrankenTuples.ftcall"
 },
 
 ]}
