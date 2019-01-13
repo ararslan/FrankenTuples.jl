@@ -271,6 +271,47 @@ Construct an empty `FrankenTuple`.
 Base.empty(@nospecialize ft::FrankenTuple) = FrankenTuple()
 
 """
+    hasmethod(f::Function, ft::Type{<:FrankenTuple})
+
+Determine whether the function `f` has a method with positional argument types matching
+those in the unnamed portion of `ft` and with keyword arguments named in accordance with
+those in the named portion of `ft`.
+
+Note that the types in the named portion of `ft` do not factor into determining the
+existence of a matching method because keyword arguments to not participate in dispatch.
+Similarly, calling `hasmethod` with a `FrankenTuple` with an empty named portion will
+still return `true` if the positional arguments match, even if `f` only has methods that
+accept keyword arguments.
+This ensures agreement with the behavior of `hasmethod` on `Tuple`s.
+
+# Examples
+```jldoctest
+julia> f(x::Int; y=3) = x + y;
+
+julia> hasmethod(f, typeof(ftuple(1, y=2)))
+true
+
+julia> hasmethod(f, typeof(ftuple(1, a=3))) # no keyword `a`
+false
+
+julia> hasmethod(f, typeof(ftuple(44, y="My type doesn't matter")))
+true
+```
+
+!!! note
+    This method does not yet take into account world ages bounds, unlike the generic
+    `hasmethod` method in Base.
+"""
+function Base.hasmethod(f::Function, ft::Type{FrankenTuple{T,NamedTuple{N,S}}}) where {T<:Tuple,N,S<:Tuple}
+    hasmethod(f, T) || return false
+    kws = Base.kwarg_decl(which(f, T), Core.kwftype(typeof(f)))
+    isempty(kws) === isempty(N) || return false
+    return isempty(setdiff(kws, N))
+end
+Base.hasmethod(f::Function, ft::Type{FrankenTuple{T,NamedTuple{(),Tuple{}}}}) where {T<:Tuple} =
+    hasmethod(f, T)
+
+"""
     ftuple(args...; kwargs...)
 
 Construct a [`FrankenTuple`](@ref) from the given positional and keyword arguments.

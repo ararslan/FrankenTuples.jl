@@ -81,3 +81,14 @@ end
     @test ftcall(+, ftuple(1, 2)) == 3
     @test ftcall((; k...)->sum(values(k.data)), ftuple(a=3.0, b=0x4)) == 7.0
 end
+
+f(x::Int; y=3) = x + y
+g(; b, c, a) = a + b + c
+
+@testset "hasmethod" begin
+    @test hasmethod(f, typeof(ftuple(1, y=2)))
+    @test hasmethod(f, typeof(ftuple(1)))  # Agreement with using a plain Tuple
+    @test !hasmethod(f, typeof(ftuple(1, a=3)))
+    @test hasmethod(g, typeof(ftuple(a=1, b=2, c=3)))
+    @test !hasmethod(g, typeof(ftuple(a=1, b=2)))
+end
