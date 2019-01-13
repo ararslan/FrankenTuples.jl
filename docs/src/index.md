@@ -43,6 +43,12 @@ Base.eltype
 
 ## Additional Methods
 
+These are some additional ways to use `FrankenTuple`s.
+The most interesting of these is perhaps `hasmethod`, which permits looking for methods
+that have particular keyword arguments.
+This is not currently possible with the generic method in Base.
+
 ```@docs
+Base.hasmethod
 FrankenTuples.ftcall
 ```
