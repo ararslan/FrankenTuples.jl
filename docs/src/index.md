@@ -40,3 +40,9 @@ Base.tail
 Base.empty
 Base.eltype
 ```
+
+## Additional Methods
+
+```@docs
+FrankenTuples.ftcall
+```

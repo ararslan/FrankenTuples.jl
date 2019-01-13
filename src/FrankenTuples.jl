@@ -1,6 +1,6 @@
 module FrankenTuples
 
-export FrankenTuple, ftuple, @ftuple
+export FrankenTuple, ftuple, @ftuple, ftcall
 
 """
     FrankenTuple{T,NT}
@@ -337,5 +337,21 @@ macro ftuple(ex::Expr)
     end
     :(FrankenTuple($t, $nt))
 end
+
+# XXX: I'm not convinced that I like this or think it's useful in any way, but it's cute
+"""
+    ftcall(f::Function, ft::FrankenTuple)
+
+Call the function `f` using the unnamed portion of `ft` as its positional arguments and
+the named portion of `ft` as its keyword arguments.
+
+# Examples
+```jldoctest
+julia> ftcall(mapreduce, ftuple(abs2, -, 1:4; init=0))
+-30
+```
+"""
+ftcall(f::Function, ft::FrankenTuple) = f(Tuple(ft)...; NamedTuple(ft)...)
+ftcall(f::Function, ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = f()
 
 end # module
