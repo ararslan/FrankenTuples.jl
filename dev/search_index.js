@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "FrankenTuples.jl",
     "title": "FrankenTuples.FrankenTuple",
     "category": "type",
-    "text": "FrankenTuple{T,NT}\n\nA FrankenTuple contains a Tuple (of type T) and a NamedTuple (of type NT), and acts like a cross between the two, like a partially-named tuple.\n\nThe named portion of a FrankenTuple can be accessed using NamedTuple, and the unnamed portion can be accessed with Tuple.\n\nExamples\n\njulia> ft = FrankenTuple((1, 2), (a=1, b=2))\nFrankenTuple((1, 2), (a = 1, b = 2))\n\njulia> Tuple(ft)\n(1, 2)\n\njulia> NamedTuple(ft)\n(a = 1, b = 2)\n\n\n\n\n\n"
+    "text": "FrankenTuple{T<:Tuple, names, NT<:Tuple}\n\nA FrankenTuple contains a Tuple of type T and a NamedTuple with names names and types NT. It acts like a cross between the two, like a partially-named tuple.\n\nThe named portion of a FrankenTuple can be accessed using NamedTuple, and the unnamed portion can be accessed with Tuple.\n\nExamples\n\njulia> ft = FrankenTuple((1, 2), (a=1, b=2))\nFrankenTuple((1, 2), (a = 1, b = 2))\n\njulia> Tuple(ft)\n(1, 2)\n\njulia> NamedTuple(ft)\n(a = 1, b = 2)\n\n\n\n\n\n"
 },
 
 {
