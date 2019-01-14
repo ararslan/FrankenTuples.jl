@@ -18,7 +18,7 @@ using Test
     @test first(x) == 1
     @test Base.tail(x) == ftuple(2, a=3, b=4)
 
-    y = FrankenTuple{Tuple{Float64,Float64},NamedTuple{(:a,:b),Tuple{Float64,Float64}}}(x)
+    y = FrankenTuple{Tuple{Float64,Float64},(:a,:b),Tuple{Float64,Float64}}(x)
     @test y == ftuple(1.0, 2.0, a=3.0, b=4.0)
 
     t = ftuple(1, 2)
@@ -26,7 +26,7 @@ using Test
     @test length(t) == 2
     @test Tuple(t) == (1, 2)
     @test NamedTuple(t) == NamedTuple()
-    @test t == convert(FrankenTuple{Tuple{Int,Int},NamedTuple{(),Tuple{}}}, (1, 2))
+    @test t == convert(FrankenTuple{Tuple{Int,Int},(),Tuple{}}, (1, 2))
     @test sprint(show, t) == "FrankenTuple((1, 2), NamedTuple())"
     @test t == @ftuple (1, 2)
     @test keys(t) == keys(Tuple(t))
@@ -39,7 +39,7 @@ using Test
     @test length(nt) == 2
     @test Tuple(nt) == ()
     @test NamedTuple(nt) == (a=3, b=4)
-    @test nt == convert(FrankenTuple{Tuple{},NamedTuple{(:a,:b),Tuple{Int,Int}}}, (a=3, b=4))
+    @test nt == convert(FrankenTuple{Tuple{},(:a,:b),Tuple{Int,Int}}, (a=3, b=4))
     @test sprint(show, nt) == "FrankenTuple((), (a = 3, b = 4))"
     @test nt == @ftuple (a=3, b=4)
     @test keys(nt) == (:a, :b)
@@ -89,6 +89,8 @@ g(; b, c, a) = a + b + c
     @test hasmethod(f, typeof(ftuple(1, y=2)))
     @test hasmethod(f, typeof(ftuple(1)))  # Agreement with using a plain Tuple
     @test !hasmethod(f, typeof(ftuple(1, a=3)))
+    @test hasmethod(f, FrankenTuple{Tuple{Int},(:y,)})  # Omitting NamedTuple types
     @test hasmethod(g, typeof(ftuple(a=1, b=2, c=3)))
     @test !hasmethod(g, typeof(ftuple(a=1, b=2)))
+    @test hasmethod(g, FrankenTuple{Tuple{},(:a,:b,:c)})
 end

@@ -3,10 +3,11 @@ module FrankenTuples
 export FrankenTuple, ftuple, @ftuple, ftcall
 
 """
-    FrankenTuple{T,NT}
+    FrankenTuple{T<:Tuple, names, NT<:Tuple}
 
-A `FrankenTuple` contains a `Tuple` (of type `T`) and a `NamedTuple` (of type `NT`), and
-acts like a cross between the two, like a partially-named tuple.
+A `FrankenTuple` contains a `Tuple` of type `T` and a `NamedTuple` with names `names`
+and types `NT`.
+It acts like a cross between the two, like a partially-named tuple.
 
 The named portion of a `FrankenTuple` can be accessed using `NamedTuple`, and the unnamed
 portion can be accessed with `Tuple`.
@@ -23,19 +24,22 @@ julia> NamedTuple(ft)
 (a = 1, b = 2)
 ```
 """
-struct FrankenTuple{T<:Tuple,NT<:NamedTuple}
+struct FrankenTuple{T<:Tuple,names,NT<:Tuple}
     t::T
-    nt::NT
+    nt::NamedTuple{names,NT}
 
-    FrankenTuple{T,NT}(t, nt) where {T<:Tuple,NT<:NamedTuple} = new{T,NT}(t, nt)
-    FrankenTuple{T}(t::Tuple) where {T<:Tuple} = new{T,NamedTuple{(),Tuple{}}}(t, NamedTuple())
-    FrankenTuple{T,NT}(nt::NamedTuple) where {T<:Tuple,NT<:NamedTuple} = new{T,NT}((), nt)
-    FrankenTuple{T,NT}(ft::FrankenTuple) where {T<:Tuple,NT<:NamedTuple} =
-        new{T,NT}(convert(T, getfield(ft, :t)), convert(NT, getfield(ft, :nt)))
+    FrankenTuple{T,names,NT}(t, nt) where {T<:Tuple,names,NT<:Tuple} = new{T,names,NT}(t, nt)
+    FrankenTuple{T}(t::Tuple) where {T<:Tuple} = new{T,(),Tuple{}}(t, NamedTuple())
+    FrankenTuple{T,names,NT}(nt::NamedTuple) where {T<:Tuple,names,NT<:Tuple} =
+        new{T,names,NT}((), nt)
+    FrankenTuple{T,names,NT}(ft::FrankenTuple) where {T<:Tuple,names,NT<:Tuple} =
+        new{T,names,NT}(convert(T, getfield(ft, :t)),
+                        convert(NamedTuple{names,NT}, getfield(ft, :nt)))
 end
 
-FrankenTuple(t::T, nt::NT) where {T<:Tuple,NT<:NamedTuple} = FrankenTuple{T,NT}(t, nt)
-FrankenTuple() = FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}((), NamedTuple())
+FrankenTuple(t::T, nt::NamedTuple{names,NT}) where {T<:Tuple,names,NT<:Tuple} =
+    FrankenTuple{T,names,NT}(t, nt)
+FrankenTuple() = FrankenTuple{Tuple{},(),Tuple{}}((), NamedTuple())
 
 FrankenTuple(t::Tuple) = FrankenTuple(t, NamedTuple())
 FrankenTuple(nt::NamedTuple) = FrankenTuple((), nt)
@@ -64,13 +68,13 @@ function Base.show(io::IO, ft::FrankenTuple)
     print(io, ')')
     nothing
 end
-Base.show(io::IO, ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
+Base.show(io::IO, ft::FrankenTuple{Tuple{},(),Tuple{}}) =
     print(io, "FrankenTuple()")
 
-Base.convert(::Type{FrankenTuple{T,NT}}, t::Tuple) where {T<:Tuple,NT<:NamedTuple} =
-    FrankenTuple{T,NT}(convert(T, t), NamedTuple())
-Base.convert(::Type{FrankenTuple{T,NT}}, nt::NamedTuple) where {T<:Tuple,NT<:NamedTuple} =
-    FrankenTuple{T,NT}((), convert(NT, nt))
+Base.convert(::Type{FrankenTuple{T,names,NT}}, t::Tuple) where {T<:Tuple,names,NT<:Tuple} =
+    FrankenTuple{T,names,NT}(convert(T, t), NamedTuple())
+Base.convert(::Type{FrankenTuple{T,names,NT}}, nt::NamedTuple) where {T<:Tuple,names,NT<:Tuple} =
+    FrankenTuple{T,names,NT}((), convert(NamedTuple{names,NT}, nt))
 
 """
     isempty(ft::FrankenTuple)
@@ -78,7 +82,7 @@ Base.convert(::Type{FrankenTuple{T,NT}}, nt::NamedTuple) where {T<:Tuple,NT<:Nam
 Determine whether the given `FrankenTuple` is empty, i.e. has at least 1 element.
 """
 Base.isempty(ft::FrankenTuple) = false
-Base.isempty(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = true
+Base.isempty(ft::FrankenTuple{Tuple{},(),Tuple{}}) = true
 
 """
     length(ft::FrankenTuple)
@@ -86,9 +90,9 @@ Base.isempty(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = true
 Compute the number of elements in `ft`.
 """
 Base.length(ft::FrankenTuple) = length(Tuple(ft)) + length(NamedTuple(ft))
-Base.length(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = 0
-Base.length(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = length(Tuple(ft))
-Base.length(ft::FrankenTuple{Tuple{},<:NamedTuple}) = length(NamedTuple(ft))
+Base.length(ft::FrankenTuple{Tuple{},(),Tuple{}}) = 0
+Base.length(ft::FrankenTuple{<:Tuple,(),Tuple{}}) = length(Tuple(ft))
+Base.length(ft::FrankenTuple{Tuple{},names}) where {names} = length(names)
 
 """
     getindex(ft::FrankenTuple, i)
@@ -141,7 +145,7 @@ Get the first value in `ft` in iteration order.
 `ft` must be non-empty.
 """
 Base.first(ft::FrankenTuple) = @inbounds ft[1]
-Base.first(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) =
+Base.first(ft::FrankenTuple{Tuple{},(),Tuple{}}) =
     throw(ArgumentError("FrankenTuple must be non-empty"))
 
 """
@@ -161,8 +165,8 @@ Base.tail(ft::FrankenTuple) = _tail(Tuple(ft), NamedTuple(ft))
 # TODO: Should be able to get rid of the helper after VERSION >= v"1.1.0-DEV.553"
 _tail(t::Tuple{}, nt::NamedTuple{(),Tuple{}}) =
     throw(ArgumentError("FrankenTuple must be non-empty"))
-_tail(t::Tuple{}, nt::NamedTuple{N,<:Tuple}) where {N} =
-    FrankenTuple(t, NamedTuple{Base.tail(N)}(nt))
+_tail(t::Tuple{}, nt::NamedTuple{names,<:Tuple}) where {names} =
+    FrankenTuple(t, NamedTuple{Base.tail(names)}(nt))
 _tail(t::Tuple, nt::NamedTuple) = FrankenTuple(Base.tail(t), nt)
 
 """
@@ -201,9 +205,9 @@ julia> keys(ftuple(1, 2; a=3, b=4))
 ```
 """
 Base.keys(ft::FrankenTuple) = (keys(Tuple(ft))..., keys(NamedTuple(ft))...)
-Base.keys(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = ()
-Base.keys(ft::FrankenTuple{Tuple{},NamedTuple{N,<:Tuple}}) where {N} = N
-Base.keys(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = keys(Tuple(ft))
+Base.keys(ft::FrankenTuple{Tuple{},(),Tuple{}}) = ()
+Base.keys(ft::FrankenTuple{Tuple{},N,<:Tuple}) where {N} = N
+Base.keys(ft::FrankenTuple{<:Tuple,(),Tuple{}}) = keys(Tuple(ft))
 
 """
     values(ft::FrankenTuple)
@@ -218,9 +222,9 @@ julia> values(ftuple(1, 2; a=3, b=4))
 ```
 """
 Base.values(ft::FrankenTuple) = (Tuple(ft)..., NamedTuple(ft)...)
-Base.values(ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = ()
-Base.values(ft::FrankenTuple{Tuple{},<:NamedTuple}) = values(NamedTuple(ft))
-Base.values(ft::FrankenTuple{<:Tuple,NamedTuple{(),Tuple{}}}) = Tuple(ft)
+Base.values(ft::FrankenTuple{Tuple{},(),Tuple{}}) = ()
+Base.values(ft::FrankenTuple{Tuple{},names,<:Tuple}) where {names} = values(NamedTuple(ft))
+Base.values(ft::FrankenTuple{<:Tuple,(),Tuple{}}) = Tuple(ft)
 
 """
     pairs(ft::FrankenTuple)
@@ -260,7 +264,7 @@ julia> eltype(ftuple())
 Union{}
 ```
 """
-Base.eltype(::Type{FrankenTuple{T,NamedTuple{N,V}}}) where {T<:Tuple,N,V<:Tuple} =
+Base.eltype(::Type{FrankenTuple{T,names,V}}) where {T<:Tuple,names,V<:Tuple} =
     Base.promote_typejoin(eltype(T), eltype(V))
 
 """
@@ -302,13 +306,15 @@ true
     This method does not yet take into account world ages bounds, unlike the generic
     `hasmethod` method in Base.
 """
-function Base.hasmethod(f::Function, ft::Type{FrankenTuple{T,NamedTuple{N,S}}}) where {T<:Tuple,N,S<:Tuple}
+function Base.hasmethod(f::Function, ::Type{FrankenTuple{T,names,NT}}) where {T<:Tuple,names,NT<:Tuple}
     hasmethod(f, T) || return false
     kws = Base.kwarg_decl(which(f, T), Core.kwftype(typeof(f)))
-    isempty(kws) === isempty(N) || return false
-    return isempty(setdiff(kws, N))
+    isempty(kws) === isempty(names) || return false
+    return isempty(setdiff(kws, names))
 end
-Base.hasmethod(f::Function, ft::Type{FrankenTuple{T,NamedTuple{(),Tuple{}}}}) where {T<:Tuple} =
+Base.hasmethod(f::Function, ::Type{FrankenTuple{T,names}}) where {T<:Tuple,names} =
+    hasmethod(f, FrankenTuple{T,names,Tuple{Iterators.repeated(Any, length(names))...}})
+Base.hasmethod(f::Function, ft::Type{FrankenTuple{T,(),Tuple{}}}) where {T<:Tuple} =
     hasmethod(f, T)
 
 """
@@ -393,6 +399,6 @@ julia> ftcall(mapreduce, ftuple(abs2, -, 1:4; init=0))
 ```
 """
 ftcall(f::Function, ft::FrankenTuple) = f(Tuple(ft)...; NamedTuple(ft)...)
-ftcall(f::Function, ft::FrankenTuple{Tuple{},NamedTuple{(),Tuple{}}}) = f()
+ftcall(f::Function, ft::FrankenTuple{Tuple{},(),Tuple{}}) = f()
 
 end # module
