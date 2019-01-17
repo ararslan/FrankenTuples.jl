@@ -84,6 +84,7 @@ end
 
 f(x::Int; y=3) = x + y
 g(; b, c, a) = a + b + c
+h(x::String; a, kwargs...) = x * a
 
 @testset "hasmethod" begin
     @test hasmethod(f, typeof(ftuple(1, y=2)))
@@ -91,6 +92,11 @@ g(; b, c, a) = a + b + c
     @test !hasmethod(f, typeof(ftuple(1, a=3)))
     @test hasmethod(f, FrankenTuple{Tuple{Int},(:y,)})  # Omitting NamedTuple types
     @test hasmethod(g, typeof(ftuple(a=1, b=2, c=3)))
-    @test !hasmethod(g, typeof(ftuple(a=1, b=2)))
+    @test hasmethod(g, typeof(ftuple(a=1, b=2)))
+    @test !hasmethod(g, FrankenTuple{Tuple{},(:a,:b,:d)})
     @test hasmethod(g, FrankenTuple{Tuple{},(:a,:b,:c)})
+    @test hasmethod(h, FrankenTuple{Tuple{String},(:a,:b,:c,:d)})
+    @test !hasmethod(h, FrankenTuple{Tuple{Int},(:a,)})
+
+    @test !hasmethod(f, FrankenTuple{Tuple{Int},(:y,)}, world=typemin(UInt))
 end

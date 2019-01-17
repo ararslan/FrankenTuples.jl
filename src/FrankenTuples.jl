@@ -288,34 +288,54 @@ still return `true` if the positional arguments match, even if `f` only has meth
 accept keyword arguments.
 This ensures agreement with the behavior of `hasmethod` on `Tuple`s.
 
+More generally, the names in the `FrankenTuple` must be a subset of the keyword argument
+names in the matching method, _except_ when the method accepts a variable number of
+keyword arguments (e.g. `kwargs...`).
+In that case, the names in the method must be a subset of the `FrankenTuple`'s names.
+
 # Examples
 ```jldoctest
-julia> f(x::Int; y=3) = x + y;
+julia> f(x::Int; y=3, z=4) = x + y + z;
 
-julia> hasmethod(f, typeof(ftuple(1, y=2)))
+julia> hasmethod(f, FrankenTuple{Tuple{Int},(:y,)})
 true
 
-julia> hasmethod(f, typeof(ftuple(1, a=3))) # no keyword `a`
+julia> hasmethod(f, FrankenTuple{Tuple{Int},(:a,)) # no keyword `a`
 false
 
-julia> hasmethod(f, typeof(ftuple(44, y="My type doesn't matter")))
+julia> g(; a, b, kwargs...) = +(a, b, kwargs...);
+
+julia> hasmethod(g, FrankenTuple{Tuple{},(:a,:b,:c,:d)}) # g accepts arbitrarily many kwargs
 true
 ```
-
-!!! note
-    This method does not yet take into account world ages bounds, unlike the generic
-    `hasmethod` method in Base.
 """
-function Base.hasmethod(f::Function, ::Type{FrankenTuple{T,names,NT}}) where {T<:Tuple,names,NT<:Tuple}
+function Base.hasmethod(f::Function,
+                        ::Type{FrankenTuple{T,names,NT}};
+                        world=typemax(UInt)) where {T<:Tuple,names,NT<:Tuple}
     hasmethod(f, T) || return false
-    kws = Base.kwarg_decl(which(f, T), Core.kwftype(typeof(f)))
+    m = which(f, T)
+    Base.max_world(m) <= world || return false
+    kws = Base.kwarg_decl(m, Core.kwftype(typeof(f)))
     isempty(kws) === isempty(names) || return false
-    return isempty(setdiff(kws, names))
+    for (i, k) in enumerate(kws)
+        if endswith(String(k), "...")
+            deleteat!(kws, i)
+            return issubset(kws, names)
+        end
+    end
+    issubset(names, kws)
 end
-Base.hasmethod(f::Function, ::Type{FrankenTuple{T,names}}) where {T<:Tuple,names} =
-    hasmethod(f, FrankenTuple{T,names,Tuple{Iterators.repeated(Any, length(names))...}})
-Base.hasmethod(f::Function, ft::Type{FrankenTuple{T,(),Tuple{}}}) where {T<:Tuple} =
-    hasmethod(f, T)
+function Base.hasmethod(f::Function,
+                        ::Type{FrankenTuple{T,names}};
+                        world=typemax(UInt)) where {T<:Tuple,names}
+    NT = Tuple{Iterators.repeated(Any, length(names))...}
+    hasmethod(f, FrankenTuple{T,names,NT}; world=world)
+end
+function Base.hasmethod(f::Function,
+                        ::Type{FrankenTuple{T,(),Tuple{}}};
+                        world=typemax(UInt)) where {T<:Tuple}
+    hasmethod(f, T; world=world)
+end
 
 """
     ftuple(args...; kwargs...)
