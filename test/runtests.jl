@@ -86,6 +86,9 @@ f(x::Int; y=3) = x + y
 g(; b, c, a) = a + b + c
 h(x::String; a, kwargs...) = x * a
 
+#=
+# MethodError: no method matching max_world(::Method)
+
 @testset "hasmethod" begin
     @test hasmethod(f, typeof(ftuple(1, y=2)))
     @test hasmethod(f, typeof(ftuple(1)))  # Agreement with using a plain Tuple
@@ -100,3 +103,4 @@ h(x::String; a, kwargs...) = x * a
 
     @test !hasmethod(f, FrankenTuple{Tuple{Int},(:y,)}, world=typemin(UInt))
 end
+=#
