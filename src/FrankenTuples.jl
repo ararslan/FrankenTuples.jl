@@ -418,7 +418,7 @@ julia> ftcall(mapreduce, ftuple(abs2, -, 1:4; init=0))
 -30
 ```
 """
-ftcall(f::Function, ft::FrankenTuple) = f(Tuple(ft)...; NamedTuple(ft)...)
-ftcall(f::Function, ft::FrankenTuple{Tuple{},(),Tuple{}}) = f()
+ftcall(f, ft::FrankenTuple) = f(Tuple(ft)...; NamedTuple(ft)...)
+ftcall(f, ft::FrankenTuple{Tuple{},(),Tuple{}}) = f()
 
 end # module
