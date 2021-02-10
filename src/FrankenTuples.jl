@@ -300,7 +300,7 @@ julia> f(x::Int; y=3, z=4) = x + y + z;
 julia> hasmethod(f, FrankenTuple{Tuple{Int},(:y,)})
 true
 
-julia> hasmethod(f, FrankenTuple{Tuple{Int},(:a,)) # no keyword `a`
+julia> hasmethod(f, FrankenTuple{Tuple{Int},(:a,)}) # no keyword `a`
 false
 
 julia> g(; a, b, kwargs...) = +(a, b, kwargs...);
@@ -312,29 +312,13 @@ true
 function Base.hasmethod(f::Function,
                         ::Type{FrankenTuple{T,names,NT}};
                         world=typemax(UInt)) where {T<:Tuple,names,NT<:Tuple}
-    hasmethod(f, T) || return false
-    m = which(f, T)
-    Base.max_world(m) <= world || return false
-    kws = Base.kwarg_decl(m, Core.kwftype(typeof(f)))
-    isempty(kws) === isempty(names) || return false
-    for (i, k) in enumerate(kws)
-        if endswith(String(k), "...")
-            deleteat!(kws, i)
-            return issubset(kws, names)
-        end
-    end
-    issubset(names, kws)
+    hasmethod(f, T, names; world=world)
 end
 function Base.hasmethod(f::Function,
                         ::Type{FrankenTuple{T,names}};
                         world=typemax(UInt)) where {T<:Tuple,names}
     NT = Tuple{Iterators.repeated(Any, length(names))...}
     hasmethod(f, FrankenTuple{T,names,NT}; world=world)
-end
-function Base.hasmethod(f::Function,
-                        ::Type{FrankenTuple{T,(),Tuple{}}};
-                        world=typemax(UInt)) where {T<:Tuple}
-    hasmethod(f, T; world=world)
 end
 
 """
@@ -418,7 +402,14 @@ julia> ftcall(mapreduce, ftuple(abs2, -, 1:4; init=0))
 -30
 ```
 """
-ftcall(f::Function, ft::FrankenTuple) = f(Tuple(ft)...; NamedTuple(ft)...)
-ftcall(f::Function, ft::FrankenTuple{Tuple{},(),Tuple{}}) = f()
+ftcall(f, ft::FrankenTuple) = f(Tuple(ft)...; NamedTuple(ft)...)
+ftcall(f, ft::FrankenTuple{Tuple{},(),Tuple{}}) = f()
+
+# NOTE: this method signature makes sure we don't define map(f)
+function Base.map(f, ft::FrankenTuple, fts::FrankenTuple...)
+    t = map(f, Tuple(ft), map(Tuple, fts)...)
+    nt = map(f, NamedTuple(ft), map(NamedTuple, fts)...)
+    FrankenTuple(t, nt)
+end
 
 end # module

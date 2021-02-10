@@ -100,3 +100,9 @@ h(x::String; a, kwargs...) = x * a
 
     @test !hasmethod(f, FrankenTuple{Tuple{Int},(:y,)}, world=typemin(UInt))
 end
+
+@testset "map" begin
+    @test FrankenTuple((11,22), (x=33,y=44)) == map(+, FrankenTuple((1,2), (x=3,y=4)), FrankenTuple((10, 20), (x=30,y=40)))
+    @test_throws Exception map(+, FrankenTuple((1,2), (x=3,y=4)), FrankenTuple((10, 20), (x=30,)))
+    @test_throws Exception map(+, FrankenTuple((1,2), (x=3,y=4)), FrankenTuple((10,), (x=30,y=40)))
+end
