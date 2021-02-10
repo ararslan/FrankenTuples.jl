@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1'
+          version: '1.5' # 1.6 will break doctests due to type aliases, until the tests are updated
       - run: |
           julia --project=docs -e '
             using Pkg
