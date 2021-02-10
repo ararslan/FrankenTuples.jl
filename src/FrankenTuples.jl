@@ -312,29 +312,13 @@ true
 function Base.hasmethod(f::Function,
                         ::Type{FrankenTuple{T,names,NT}};
                         world=typemax(UInt)) where {T<:Tuple,names,NT<:Tuple}
-    hasmethod(f, T) || return false
-    m = which(f, T)
-    Base.max_world(m) <= world || return false
-    kws = Base.kwarg_decl(m, Core.kwftype(typeof(f)))
-    isempty(kws) === isempty(names) || return false
-    for (i, k) in enumerate(kws)
-        if endswith(String(k), "...")
-            deleteat!(kws, i)
-            return issubset(kws, names)
-        end
-    end
-    issubset(names, kws)
+    hasmethod(f, T, names; world=world)
 end
 function Base.hasmethod(f::Function,
                         ::Type{FrankenTuple{T,names}};
                         world=typemax(UInt)) where {T<:Tuple,names}
     NT = Tuple{Iterators.repeated(Any, length(names))...}
     hasmethod(f, FrankenTuple{T,names,NT}; world=world)
-end
-function Base.hasmethod(f::Function,
-                        ::Type{FrankenTuple{T,(),Tuple{}}};
-                        world=typemax(UInt)) where {T<:Tuple}
-    hasmethod(f, T; world=world)
 end
 
 """
