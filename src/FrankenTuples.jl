@@ -300,7 +300,7 @@ julia> f(x::Int; y=3, z=4) = x + y + z;
 julia> hasmethod(f, FrankenTuple{Tuple{Int},(:y,)})
 true
 
-julia> hasmethod(f, FrankenTuple{Tuple{Int},(:a,)) # no keyword `a`
+julia> hasmethod(f, FrankenTuple{Tuple{Int},(:a,)}) # no keyword `a`
 false
 
 julia> g(; a, b, kwargs...) = +(a, b, kwargs...);
