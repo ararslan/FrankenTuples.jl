@@ -274,8 +274,41 @@ Construct an empty `FrankenTuple`.
 """
 Base.empty(@nospecialize ft::FrankenTuple) = FrankenTuple()
 
+if VERSION < v"1.2.0-DEV.217"
+    function Base.hasmethod(@nospecialize(f),
+                            ::Type{FrankenTuple{T,names,NT}};
+                            world=typemax(UInt)) where {T<:Tuple,names,NT<:Tuple}
+        hasmethod(f, T; world=world) || return false
+        m = which(f, T)
+        kws = Base.kwarg_decl(m, Core.kwftype(typeof(f)))
+        for kw in kws
+            endswith(String(kw), "...") && return true
+        end
+        issubset(names, kws)
+    end
+
+    function Base.hasmethod(@nospecialize(f),
+                            ::Type{FrankenTuple{T,names}};
+                            world=typemax(UInt)) where {T<:Tuple,names}
+        NT = Tuple{Iterators.repeated(Any, length(names))...}
+        hasmethod(f, FrankenTuple{T,names,NT}; world=world)
+    end
+else
+    function Base.hasmethod(@nospecialize(f),
+                            ::Type{FrankenTuple{T,names}};
+                            world=typemax(UInt)) where {T<:Tuple,names}
+        hasmethod(f, T, names; world=world)
+    end
+end
+
+function Base.hasmethod(@nospecialize(f),
+                        ::Type{FrankenTuple{T,(),Tuple{}}};
+                        world=typemax(UInt)) where {T<:Tuple}
+    hasmethod(f, T; world=world)
+end
+
 """
-    hasmethod(f::Function, ft::Type{<:FrankenTuple})
+    hasmethod(f, ft::Type{<:FrankenTuple})
 
 Determine whether the function `f` has a method with positional argument types matching
 those in the unnamed portion of `ft` and with keyword arguments named in accordance with
@@ -309,33 +342,7 @@ julia> hasmethod(g, FrankenTuple{Tuple{},(:a,:b,:c,:d)}) # g accepts arbitrarily
 true
 ```
 """
-function Base.hasmethod(f::Function,
-                        ::Type{FrankenTuple{T,names,NT}};
-                        world=typemax(UInt)) where {T<:Tuple,names,NT<:Tuple}
-    hasmethod(f, T) || return false
-    m = which(f, T)
-    Base.max_world(m) <= world || return false
-    kws = Base.kwarg_decl(m, Core.kwftype(typeof(f)))
-    isempty(kws) === isempty(names) || return false
-    for (i, k) in enumerate(kws)
-        if endswith(String(k), "...")
-            deleteat!(kws, i)
-            return issubset(kws, names)
-        end
-    end
-    issubset(names, kws)
-end
-function Base.hasmethod(f::Function,
-                        ::Type{FrankenTuple{T,names}};
-                        world=typemax(UInt)) where {T<:Tuple,names}
-    NT = Tuple{Iterators.repeated(Any, length(names))...}
-    hasmethod(f, FrankenTuple{T,names,NT}; world=world)
-end
-function Base.hasmethod(f::Function,
-                        ::Type{FrankenTuple{T,(),Tuple{}}};
-                        world=typemax(UInt)) where {T<:Tuple}
-    hasmethod(f, T; world=world)
-end
+Base.hasmethod(::Any, ::Type{<:FrankenTuple})
 
 """
     ftuple(args...; kwargs...)
