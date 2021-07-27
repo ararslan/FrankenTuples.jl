@@ -2,6 +2,9 @@ name = "FrankenTuples"
 uuid = "7e584817-dab4-53a9-9a51-4037a36b0ad0"
 version = "0.0.1"
 
+[compat]
+julia = "1"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
