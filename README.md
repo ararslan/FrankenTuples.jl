@@ -1,7 +1,7 @@
 # FrankenTuples.jl
 
 [![Build status](https://github.com/ararslan/FrankenTuples.jl/workflows/CI/badge.svg)](https://github.com/ararslan/FrankenTuples.jl/actions?query=workflow%3ACI+branch%3Amaster)
-[![Coveralls](https://coveralls.io/repos/github/ararslan/FrankenTuples.jl/badge.svg?branch=master)](https://coveralls.io/github/ararslan/FrankenTuples.jl?branch=master)
+[![codecov](https://codecov.io/gh/ararslan/FrankenTuples.jl/branch/master/graph/badge.svg?token=G47EaAAqKi)](https://codecov.io/gh/ararslan/FrankenTuples.jl)
 [![][docs-latest-img]][docs-latest-url]
 
 This package defines a type, `FrankenTuple`, which is like a cross between a `Tuple` and a
