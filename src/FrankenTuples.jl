@@ -277,7 +277,7 @@ Base.empty(@nospecialize ft::FrankenTuple) = FrankenTuple()
 if VERSION < v"1.2.0-DEV.217"
     function Base.hasmethod(@nospecialize(f),
                             ::Type{FrankenTuple{T,names,NT}};
-                            world=typemax(UInt)) where {T<:Tuple,names,NT<:Tuple}
+                            world=typemax(UInt)) where {T,names,NT}
         hasmethod(f, T; world=world) || return false
         m = which(f, T)
         kws = Base.kwarg_decl(m, Core.kwftype(typeof(f)))
@@ -287,24 +287,25 @@ if VERSION < v"1.2.0-DEV.217"
         issubset(names, kws)
     end
 
-    function Base.hasmethod(@nospecialize(f),
-                            ::Type{FrankenTuple{T,names}};
-                            world=typemax(UInt)) where {T<:Tuple,names}
-        NT = Tuple{Iterators.repeated(Any, length(names))...}
-        hasmethod(f, FrankenTuple{T,names,NT}; world=world)
-    end
 else
     function Base.hasmethod(@nospecialize(f),
-                            ::Type{FrankenTuple{T,names}};
-                            world=typemax(UInt)) where {T<:Tuple,names}
+                            ::Type{FrankenTuple{T,names,NT}};
+                            world=typemax(UInt)) where {T,names,NT}
         hasmethod(f, T, names; world=world)
     end
 end
 
 function Base.hasmethod(@nospecialize(f),
                         ::Type{FrankenTuple{T,(),Tuple{}}};
-                        world=typemax(UInt)) where {T<:Tuple}
+                        world=typemax(UInt)) where {T}
     hasmethod(f, T; world=world)
+end
+
+function Base.hasmethod(@nospecialize(f),
+                        ::Type{FrankenTuple{T,names}};
+                        world=typemax(UInt)) where {T,names}
+    NT = Tuple{Iterators.repeated(Any, length(names))...}
+    hasmethod(f, FrankenTuple{T,names,NT}; world=world)
 end
 
 """
