@@ -1,6 +1,6 @@
 # FrankenTuples.jl
 
-[![Travis](https://travis-ci.org/ararslan/FrankenTuples.jl.svg?branch=master)](https://travis-ci.org/ararslan/FrankenTuples.jl)
+[![Build status](https://github.com/ararslan/FrankenTuples.jl/workflows/CI/badge.svg)](https://github.com/ararslan/FrankenTuples.jl/actions?query=workflow%3ACI+branch%3Amaster)
 [![Coveralls](https://coveralls.io/repos/github/ararslan/FrankenTuples.jl/badge.svg?branch=master)](https://coveralls.io/github/ararslan/FrankenTuples.jl?branch=master)
 [![][docs-latest-img]][docs-latest-url]
 
