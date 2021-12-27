@@ -247,7 +247,7 @@ Base.pairs(ft::FrankenTuple) = Iterators.Pairs(ft, keys(ft))
     eltype(ft::FrankenTuple)
 
 Determine the element type of `ft`.
-This is the immedate supertype of the elements in `ft` if they are not homogeneously typed.
+This is the immediate supertype of the elements in `ft` if they are not homogeneously typed.
 
 # Examples
 ```jldoctest
