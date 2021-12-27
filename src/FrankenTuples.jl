@@ -359,7 +359,16 @@ julia> ftuple(1, 2, a=3, b=4)
 FrankenTuple((1, 2), (a = 3, b = 4))
 ```
 """
-ftuple(args...; kwargs...) = FrankenTuple(args, kwargs.data)
+function ftuple(args...; kwargs...)
+    @static if VERSION < v"1.7.0-DEV.1017"
+        nt = kwargs.data
+    else
+        # NOTE: We don't use this unconditionally because the `NamedTuple` constructor
+        # method that accepts arbitrary key-value iterators requires 1.6.0-DEV.877
+        nt = NamedTuple(kwargs)
+    end
+    FrankenTuple(args, nt)
+end
 
 """
     @ftuple (x...; y...)

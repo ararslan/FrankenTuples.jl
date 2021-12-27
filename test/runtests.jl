@@ -79,7 +79,7 @@ end
     @test ftcall(sum, ftuple(abs2, [1 2; 3 4]; dims=2)) == reshape([5, 25], (2, 1))
     @test ftcall(string, ftuple()) == ""
     @test ftcall(+, ftuple(1, 2)) == 3
-    @test ftcall((; k...)->sum(values(k.data)), ftuple(a=3.0, b=0x4)) == 7.0
+    @test ftcall((; k...)->sum(values(k)), ftuple(a=3.0, b=0x4)) == 7.0
 end
 
 f(x::Int; y=3) = x + y
