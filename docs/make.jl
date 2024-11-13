@@ -6,4 +6,4 @@ makedocs(modules=[FrankenTuples],
          authors="Alex Arslan",
          pages=["index.md"])
 
-deploydocs(repo="github.com/ararslan/FrankenTuples.jl.git", target="build")
+deploydocs(repo="github.com/ararslan/FrankenTuples.jl.git")

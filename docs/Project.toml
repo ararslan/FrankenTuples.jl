@@ -1,6 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-FrankenTuples = "7e584817-dab4-53a9-9a51-4037a36b0ad0"
 
 [compat]
-Documenter = "~0.20"
+Documenter = "1"

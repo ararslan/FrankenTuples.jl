@@ -16,4 +16,4 @@ No one Base type currently models this, so `FrankenTuple` was created as an expe
 see if and when this precise structure could be useful.
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-latest-url]: http://ararslan.github.io/FrankenTuples.jl/latest/
+[docs-latest-url]: http://ararslan.github.io/FrankenTuples.jl/dev/
