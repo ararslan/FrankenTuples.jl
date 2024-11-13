@@ -181,7 +181,7 @@ julia> ft = @ftuple (1, a=3, 2, b=4)
 FrankenTuple((1, 2), (a = 3, b = 4))
 
 julia> collect(ft)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
  1
  2
  3
@@ -234,7 +234,7 @@ Construct a `Pairs` iterator that associates the `keys` of `ft` with its `values
 # Examples
 ```jldoctest
 julia> collect(pairs(ftuple(1, 2; a=3, b=4)))
-4-element Array{Pair{Any,Int64},1}:
+4-element Vector{Pair{Any, Int64}}:
   1 => 1
   2 => 2
  :a => 3
