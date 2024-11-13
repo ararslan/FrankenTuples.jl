@@ -79,7 +79,7 @@ Base.convert(::Type{FrankenTuple{T,names,NT}}, nt::NamedTuple) where {T<:Tuple,n
 """
     isempty(ft::FrankenTuple)
 
-Determine whether the given `FrankenTuple` is empty, i.e. has at least 1 element.
+Determine whether the given `FrankenTuple` is empty, i.e. has no elements.
 """
 Base.isempty(ft::FrankenTuple) = false
 Base.isempty(ft::FrankenTuple{Tuple{},(),Tuple{}}) = true
